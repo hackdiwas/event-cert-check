@@ -3,94 +3,74 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  CheckCircle2, 
-  XCircle, 
-  Download, 
-  ExternalLink, 
-  Copy, 
-  Share2,
-  Calendar,
-  User,
-  Mail,
-  FileText
-} from 'lucide-react';
+import { CheckCircle2, XCircle, Download, ExternalLink, Copy, Share2, Calendar, User, Mail, FileText } from 'lucide-react';
 import { ValidationResult } from '@/types/certificate';
 import { generateCertificatePermalink, isValidDownloadUrl } from '@/utils/certificateValidator';
 import { useToast } from '@/hooks/use-toast';
-
 interface VerificationResultProps {
   result: ValidationResult;
 }
-
-export const VerificationResult: React.FC<VerificationResultProps> = ({ result }) => {
+export const VerificationResult: React.FC<VerificationResultProps> = ({
+  result
+}) => {
   const [isDownloading, setIsDownloading] = useState(false);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleDownloadCertificate = async () => {
     if (!result.certificate?.downloadUrl) return;
-    
     if (!isValidDownloadUrl(result.certificate.downloadUrl)) {
       toast({
         variant: "destructive",
         title: "Invalid Download Link",
-        description: "The download link appears to be invalid. Please contact support.",
+        description: "The download link appears to be invalid. Please contact support."
       });
       return;
     }
-
     setIsDownloading(true);
-    
     try {
       // Open download link in new tab
       window.open(result.certificate.downloadUrl, '_blank', 'noopener,noreferrer');
-      
       toast({
         title: "Download Started",
-        description: "Your certificate download has been initiated in a new tab.",
+        description: "Your certificate download has been initiated in a new tab."
       });
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Download Failed",
-        description: "Unable to start download. Please try again or contact support.",
+        description: "Unable to start download. Please try again or contact support."
       });
     } finally {
       setIsDownloading(false);
     }
   };
-
   const handleCopyPermalink = async () => {
     if (!result.certificate) return;
-    
     const permalink = generateCertificatePermalink(result.certificate.id);
-    
     try {
       await navigator.clipboard.writeText(permalink);
       toast({
         title: "Link Copied",
-        description: "Certificate verification link copied to clipboard.",
+        description: "Certificate verification link copied to clipboard."
       });
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Copy Failed",
-        description: "Unable to copy link. Please select and copy manually.",
+        description: "Unable to copy link. Please select and copy manually."
       });
     }
   };
-
   const handleShare = async () => {
     if (!result.certificate) return;
-    
     const permalink = generateCertificatePermalink(result.certificate.id);
-    
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'Wikiclub Tech UU Certificate Verification',
           text: `Certificate verification for ${result.certificate.name}`,
-          url: permalink,
+          url: permalink
         });
       } catch (error) {
         // User cancelled or sharing not supported, fallback to copy
@@ -100,10 +80,8 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({ result }
       handleCopyPermalink();
     }
   };
-
   if (!result.success) {
-    return (
-      <Card className="border-destructive/20 bg-destructive/5 animate-in slide-in-from-bottom-4 duration-500">
+    return <Card className="border-destructive/20 bg-destructive/5 animate-in slide-in-from-bottom-4 duration-500">
         <CardContent className="pt-6">
           <div className="flex items-start space-x-4">
             <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
@@ -131,17 +109,14 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({ result }
             </div>
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
-  const { certificate } = result;
+  const {
+    certificate
+  } = result;
   if (!certificate) return null;
-
   const hasDownloadUrl = certificate.downloadUrl && isValidDownloadUrl(certificate.downloadUrl);
-
-  return (
-    <Card className="border-success/20 bg-gradient-to-br from-success/5 to-accent/5 shadow-success animate-in slide-in-from-bottom-4 duration-500">
+  return <Card className="border-success/20 bg-gradient-to-br from-success/5 to-accent/5 shadow-success animate-in slide-in-from-bottom-4 duration-500">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -204,53 +179,23 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({ result }
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3">
-          {hasDownloadUrl ? (
-            <Button
-              onClick={handleDownloadCertificate}
-              disabled={isDownloading}
-              className="flex-1 bg-gradient-success hover:shadow-success transition-all duration-300 transform hover:scale-[1.02] h-12"
-            >
-              {isDownloading ? (
-                <>
+          {hasDownloadUrl ? <Button onClick={handleDownloadCertificate} disabled={isDownloading} className="flex-1 bg-gradient-success hover:shadow-success transition-all duration-300 transform hover:scale-[1.02] h-12">
+              {isDownloading ? <>
                   <Download className="w-4 h-4 mr-2 animate-bounce" />
                   Opening Download...
-                </>
-              ) : (
-                <>
+                </> : <>
                   <Download className="w-4 h-4 mr-2" />
                   Download Certificate
                   <ExternalLink className="w-4 h-4 ml-2" />
-                </>
-              )}
-            </Button>
-          ) : (
-            <Alert className="flex-1">
+                </>}
+            </Button> : <Alert className="flex-1">
               <FileText className="w-4 h-4" />
               <AlertDescription>
                 Download link not available. Please contact support for assistance.
               </AlertDescription>
-            </Alert>
-          )}
+            </Alert>}
           
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCopyPermalink}
-              className="flex-shrink-0"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              Copy Link
-            </Button>
-            
-            <Button
-              variant="outline"
-              onClick={handleShare}
-              className="flex-shrink-0"
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
-          </div>
+          
         </div>
 
         {/* Security Notice */}
@@ -262,6 +207,5 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({ result }
           </p>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
